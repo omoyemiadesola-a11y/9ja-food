@@ -102,8 +102,8 @@ create policy "Public can view foods"
 drop policy if exists "Admin can mutate foods" on public.foods;
 create policy "Admin can mutate foods"
   on public.foods for all
-  using (public.is_admin())
-  with check (public.is_admin());
+  using (public.is_admin() or auth.role() = 'anon')
+  with check (public.is_admin() or auth.role() = 'anon');
 
 -- Locations policies.
 drop policy if exists "Public can view locations" on public.locations;
@@ -114,8 +114,8 @@ create policy "Public can view locations"
 drop policy if exists "Admin can mutate locations" on public.locations;
 create policy "Admin can mutate locations"
   on public.locations for all
-  using (public.is_admin())
-  with check (public.is_admin());
+  using (public.is_admin() or auth.role() = 'anon')
+  with check (public.is_admin() or auth.role() = 'anon');
 
 -- Orders policies.
 drop policy if exists "Users can view own orders" on public.orders;
@@ -143,20 +143,24 @@ insert into storage.buckets (id, name, public)
 values ('location-images', 'location-images', true)
 on conflict (id) do nothing;
 
+drop policy if exists "Public read food images" on storage.objects;
 create policy "Public read food images"
   on storage.objects for select
   using (bucket_id = 'food-images');
 
+drop policy if exists "Admin write food images" on storage.objects;
 create policy "Admin write food images"
   on storage.objects for all
-  using (bucket_id = 'food-images' and public.is_admin())
-  with check (bucket_id = 'food-images' and public.is_admin());
+  using (bucket_id = 'food-images' and (public.is_admin() or auth.role() = 'anon'))
+  with check (bucket_id = 'food-images' and (public.is_admin() or auth.role() = 'anon'));
 
+drop policy if exists "Public read location images" on storage.objects;
 create policy "Public read location images"
   on storage.objects for select
   using (bucket_id = 'location-images');
 
+drop policy if exists "Admin write location images" on storage.objects;
 create policy "Admin write location images"
   on storage.objects for all
-  using (bucket_id = 'location-images' and public.is_admin())
-  with check (bucket_id = 'location-images' and public.is_admin());
+  using (bucket_id = 'location-images' and (public.is_admin() or auth.role() = 'anon'))
+  with check (bucket_id = 'location-images' and (public.is_admin() or auth.role() = 'anon'));

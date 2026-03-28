@@ -33,6 +33,7 @@ export default function AdminDashboard() {
   const [locationForm, setLocationForm] = useState(initialLocationForm);
   const [foodImage, setFoodImage] = useState(null);
   const [locationImage, setLocationImage] = useState(null);
+  const [status, setStatus] = useState('');
 
   const loadData = async () => {
     const [foodData, locationData] = await Promise.all([fetchFoods(), fetchLocations()]);
@@ -72,45 +73,58 @@ export default function AdminDashboard() {
 
   const submitFood = async (event) => {
     event.preventDefault();
-    let imageUrl = foodForm.image_url;
-    if (foodImage) {
-      imageUrl = await uploadToBucket('food-images', foodImage);
+    setStatus('');
+    try {
+      let imageUrl = foodForm.image_url;
+      if (foodImage) {
+        imageUrl = await uploadToBucket('food-images', foodImage);
+      }
+
+      await upsertFood({
+        ...foodForm,
+        price: Number(foodForm.price),
+        image_url: imageUrl,
+      });
+
+      setFoodForm(initialFoodForm);
+      setFoodImage(null);
+      await loadData();
+      setStatus('Food saved and synced successfully.');
+    } catch (error) {
+      setStatus(`Food save failed: ${error.message}`);
     }
-
-    await upsertFood({
-      ...foodForm,
-      price: Number(foodForm.price),
-      image_url: imageUrl,
-    });
-
-    setFoodForm(initialFoodForm);
-    setFoodImage(null);
-    await loadData();
   };
 
   const submitLocation = async (event) => {
     event.preventDefault();
-    let imageUrl = locationForm.image_url;
-    if (locationImage) {
-      imageUrl = await uploadToBucket('location-images', locationImage);
+    setStatus('');
+    try {
+      let imageUrl = locationForm.image_url;
+      if (locationImage) {
+        imageUrl = await uploadToBucket('location-images', locationImage);
+      }
+
+      await upsertLocation({
+        ...locationForm,
+        latitude: Number(locationForm.latitude),
+        longitude: Number(locationForm.longitude),
+        image_url: imageUrl,
+      });
+
+      setLocationForm(initialLocationForm);
+      setLocationImage(null);
+      await loadData();
+      setStatus('Location saved and synced successfully.');
+    } catch (error) {
+      setStatus(`Location save failed: ${error.message}`);
     }
-
-    await upsertLocation({
-      ...locationForm,
-      latitude: Number(locationForm.latitude),
-      longitude: Number(locationForm.longitude),
-      image_url: imageUrl,
-    });
-
-    setLocationForm(initialLocationForm);
-    setLocationImage(null);
-    await loadData();
   };
 
   return (
     <div className="container section">
       <h1>Admin Dashboard</h1>
       <p>Manage foods and locations with full CRUD control.</p>
+      {status && <p className="mt-sm">{status}</p>}
 
       <div className="split-layout mt-md">
         <section>

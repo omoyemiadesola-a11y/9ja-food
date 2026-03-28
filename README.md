@@ -35,6 +35,7 @@ npm run dev
 3. Confirm buckets exist:
    - `food-images`
    - `location-images`
+4. If admin form writes fail, re-run `supabase/schema.sql` to refresh RLS/storage policies.
 
 ## App routes
 - `/` home
