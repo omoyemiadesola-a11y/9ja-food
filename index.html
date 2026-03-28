@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mega Chicken Demo | Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="nav-desktop">
+    <div class="container nav-inner">
+      <a href="index.html" class="brand">Mega Chicken Demo</a>
+      <nav class="nav-links">
+        <a href="index.html" data-link="index.html">Home</a>
+        <a href="menu.html" data-link="menu.html">Menu</a>
+        <a href="order.html" data-link="order.html">Order</a>
+        <a href="locations.html" data-link="locations.html">Locations</a>
+        <a href="about.html" data-link="about.html">About</a>
+        <a href="contact.html" data-link="contact.html">Contact</a>
+      </nav>
+      <a href="order.html" class="btn btn-primary">Order Now</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero section fade-in">
+      <div class="hero-inner">
+        <div>
+          <span class="badge">Freshly made daily</span>
+          <h1>Good food, fast service, happier moments.</h1>
+          <p>Discover delicious African, Chinese, bakery, and fast-food favorites in one beautiful ordering experience.</p>
+          <div class="hero-actions">
+            <a href="order.html" class="btn btn-primary">Order Now</a>
+            <a href="menu.html" class="btn btn-secondary">View Menu</a>
+          </div>
+        </div>
+        <img src="https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=1400&q=80" alt="Featured dishes">
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title-row">
+        <h2>Featured Categories</h2>
+        <a href="menu.html" class="small">Explore all →</a>
+      </div>
+      <div id="categories" class="grid category-grid"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-title-row">
+        <h2>Popular Meals</h2>
+        <a href="menu.html" class="small">See menu →</a>
+      </div>
+      <div id="featured-meals" class="scroll-row"></div>
+    </section>
+
+    <section class="section">
+      <div class="promo">
+        <h2>Weekend Combo Deal: Save up to 20%</h2>
+        <p>Order any family meal + bakery pack and enjoy a tasty discount. Limited-time demo promotion.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title-row">
+        <h2>Our Locations</h2>
+        <a href="locations.html" class="small">View all branches →</a>
+      </div>
+      <div id="location-preview" class="grid location-grid"></div>
+    </section>
+
+    <section class="section">
+      <h2>What Customers Say</h2>
+      <div class="grid quick-links">
+        <article class="card"><p class="ratings">★★★★★</p><p>"Food was hot, tasty and ready quickly. Loved the jollof!"</p><p class="small">— Ada M.</p></article>
+        <article class="card"><p class="ratings">★★★★★</p><p>"The website is super easy to use. Smooth order flow."</p><p class="small">— Kemi T.</p></article>
+        <article class="card"><p class="ratings">★★★★☆</p><p>"Great variety from pizza to breakfast in one place."</p><p class="small">— David O.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container grid quick-links">
+      <div><h3>Mega Chicken Demo</h3><p>Modern restaurant demo website for better food discovery and ordering UX.</p></div>
+      <div><h3>Quick Links</h3><p><a href="menu.html">Menu</a></p><p><a href="order.html">Order</a></p><p><a href="locations.html">Locations</a></p></div>
+      <div><h3>Contact</h3><p>+234 800 000 0000</p><p>hello@megachickendemo.com</p><p>Lagos, Nigeria</p></div>
+    </div>
+  </footer>
+
+  <nav class="bottom-nav">
+    <a href="index.html" data-link="index.html">Home</a>
+    <a href="menu.html" data-link="menu.html">Menu</a>
+    <a href="order.html" data-link="order.html">Order</a>
+    <a href="locations.html" data-link="locations.html">Locations</a>
+  </nav>
+
+  <script src="script.js"></script>
+</body>
+</html>
