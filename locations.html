@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mega Chicken Demo | Locations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="nav-desktop">
+    <div class="container nav-inner">
+      <a href="index.html" class="brand">Mega Chicken Demo</a>
+      <nav class="nav-links">
+        <a href="index.html" data-link="index.html">Home</a>
+        <a href="menu.html" data-link="menu.html">Menu</a>
+        <a href="order.html" data-link="order.html">Order</a>
+        <a href="locations.html" data-link="locations.html">Locations</a>
+        <a href="about.html" data-link="about.html">About</a>
+        <a href="contact.html" data-link="contact.html">Contact</a>
+      </nav>
+      <a href="order.html" class="btn btn-primary">Order Now</a>
+    </div>
+  </header>
+
+  <main class="container section">
+    <h1>Find a Branch Near You</h1>
+    <p>Visit, call, or order from any location below.</p>
+
+    <section class="section">
+      <div class="map-placeholder">Interactive Map Placeholder</div>
+    </section>
+
+    <section id="locations-list" class="grid location-grid"></section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="index.html" data-link="index.html">Home</a>
+    <a href="menu.html" data-link="menu.html">Menu</a>
+    <a href="order.html" data-link="order.html">Order</a>
+    <a href="locations.html" data-link="locations.html">Locations</a>
+  </nav>
+
+  <script src="script.js"></script>
+</body>
+</html>
