@@ -22,7 +22,7 @@ export default function Navbar() {
           <NavLink to="/menu">Menu</NavLink>
           <NavLink to="/locations">Locations</NavLink>
           {user && !isAdmin && <NavLink to="/cart">Cart</NavLink>}
-          {isAdmin ? <NavLink to="/admin">Admin</NavLink> : user && <NavLink to="/orders">My Orders</NavLink>}
+          {user && !isAdmin && <NavLink to="/orders">My Orders</NavLink>}
         </div>
 
         <div className="nav-actions">
