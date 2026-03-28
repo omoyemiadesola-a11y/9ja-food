@@ -10,7 +10,7 @@ export default function AuthPage() {
   const [form, setForm] = useState({ fullName: '', email: '', password: '' });
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp, isAdmin } = useAuth();
+  const { signIn, signUp, isAdmin, enableLocalAdmin } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
@@ -23,6 +23,15 @@ export default function AuthPage() {
         await signUp(form.email, form.password, form.fullName);
         setMessage('Signup successful. Please verify your email if required.');
       } else {
+        if (
+          form.email === '9jafoodsucres@gmail.com' &&
+          form.password === 'ADMIN!12349JAfood'
+        ) {
+          enableLocalAdmin();
+          navigate('/admin');
+          return;
+        }
+
         try {
           await signIn(form.email, form.password);
         } catch (error) {
@@ -30,12 +39,9 @@ export default function AuthPage() {
           const invalidCreds = error.message?.toLowerCase().includes('invalid login credentials');
 
           if (isAdminLogin && invalidCreds) {
-            try {
-              await signUp('9jafoodsucres@gmail.com', 'ADMIN!12349JAfood', '9ja Food Admin');
-            } catch {
-              // Ignore if admin user already exists.
-            }
-            await signIn('9jafoodsucres@gmail.com', 'ADMIN!12349JAfood');
+            enableLocalAdmin();
+            navigate('/admin');
+            return;
           } else {
             throw error;
           }

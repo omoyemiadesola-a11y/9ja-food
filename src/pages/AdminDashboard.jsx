@@ -8,6 +8,7 @@ import {
   upsertFood,
   upsertLocation,
 } from '../services/api';
+import { supabase } from '../utils/supabase';
 
 const initialFoodForm = {
   name: '',
@@ -41,6 +42,32 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadData();
+    const foodsChannel = supabase
+      .channel('admin-foods-sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'foods' },
+        () => {
+          loadData();
+        },
+      )
+      .subscribe();
+
+    const locationsChannel = supabase
+      .channel('admin-locations-sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'locations' },
+        () => {
+          loadData();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(foodsChannel);
+      supabase.removeChannel(locationsChannel);
+    };
   }, []);
 
   const submitFood = async (event) => {

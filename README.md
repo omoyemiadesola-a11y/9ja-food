@@ -9,6 +9,7 @@ A mobile-first, desktop-responsive restaurant web app with:
 ## Admin Login
 - **Email:** `9jafoodsucres@gmail.com`
 - **Password:** `ADMIN!12349JAfood`
+- If Supabase email confirmation blocks admin sign-in, the app supports a local admin UX bypass for this credential pair.
 
 > Admin access is protected in both frontend route guards and Supabase RLS policies.
 

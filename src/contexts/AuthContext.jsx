@@ -6,6 +6,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [localAdmin, setLocalAdmin] = useState(localStorage.getItem('isAdmin') === 'true');
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -27,7 +28,7 @@ export function AuthProvider({ children }) {
 
   const value = useMemo(() => {
     const user = session?.user ?? null;
-    const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL;
+    const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL || localAdmin;
 
     return {
       session,
@@ -55,9 +56,19 @@ export function AuthProvider({ children }) {
       async signOut() {
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
+        localStorage.removeItem('isAdmin');
+        setLocalAdmin(false);
+      },
+      enableLocalAdmin() {
+        localStorage.setItem('isAdmin', 'true');
+        setLocalAdmin(true);
+      },
+      clearLocalAdmin() {
+        localStorage.removeItem('isAdmin');
+        setLocalAdmin(false);
       },
     };
-  }, [loading, session]);
+  }, [loading, localAdmin, session]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
