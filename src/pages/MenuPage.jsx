@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import FoodCard from '../components/FoodCard';
+import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { fetchFoods } from '../services/api';
 
@@ -12,6 +14,8 @@ export default function MenuPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const run = async () => {
@@ -34,6 +38,14 @@ export default function MenuPage() {
       return byCategory && bySearch;
     }),
   [foods, activeCategory, search]);
+
+  const handleFoodClick = (food) => {
+    if (!user) {
+      navigate(`/auth?mode=signup&redirect=/menu&food=${food.id}`);
+      return;
+    }
+    addToCart(food);
+  };
 
   if (loading) return <div className="container section">Loading menu...</div>;
 
@@ -66,7 +78,7 @@ export default function MenuPage() {
 
       <section className="grid foods-grid mt-md">
         {filteredFoods.map((food) => (
-          <FoodCard key={food.id} food={food} onAdd={addToCart} />
+          <FoodCard key={food.id} food={food} onAdd={handleFoodClick} />
         ))}
       </section>
     </div>

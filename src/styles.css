@@ -175,6 +175,16 @@ p { color: var(--muted); }
   font-weight: 700;
 }
 
+.link-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--green);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .input {
   width: 100%;
   border: 1px solid #d7ddda;

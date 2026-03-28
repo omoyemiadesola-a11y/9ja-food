@@ -27,7 +27,10 @@ export default function Navbar() {
 
         <div className="nav-actions">
           {!user ? (
-            <Link className="btn btn-primary" to="/auth">Login</Link>
+            <>
+              <Link className="btn btn-secondary desktop-only" to="/auth?mode=signup">Sign Up</Link>
+              <Link className="btn btn-primary" to="/auth">Login</Link>
+            </>
           ) : (
             <>
               <span className="small desktop-only">{user.email}</span>
