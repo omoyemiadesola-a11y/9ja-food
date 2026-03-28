@@ -93,7 +93,11 @@ export default function AdminDashboard() {
         image_url: imageUrl,
       };
       if (isLocalAdmin) {
-        await upsertFoodWithToken({ token: LOCAL_ADMIN_TOKEN, payload });
+        try {
+          await upsertFoodWithToken({ token: LOCAL_ADMIN_TOKEN, payload });
+        } catch {
+          await upsertFood(payload);
+        }
       } else {
         await upsertFood(payload);
       }
@@ -123,7 +127,11 @@ export default function AdminDashboard() {
         image_url: imageUrl,
       };
       if (isLocalAdmin) {
-        await upsertLocationWithToken({ token: LOCAL_ADMIN_TOKEN, payload });
+        try {
+          await upsertLocationWithToken({ token: LOCAL_ADMIN_TOKEN, payload });
+        } catch {
+          await upsertLocation(payload);
+        }
       } else {
         await upsertLocation(payload);
       }
@@ -170,7 +178,11 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={async () => {
                       if (isLocalAdmin) {
-                        await deleteFoodWithToken({ token: LOCAL_ADMIN_TOKEN, id: food.id });
+                        try {
+                          await deleteFoodWithToken({ token: LOCAL_ADMIN_TOKEN, id: food.id });
+                        } catch {
+                          await deleteFood(food.id);
+                        }
                       } else {
                         await deleteFood(food.id);
                       }
@@ -211,7 +223,11 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={async () => {
                       if (isLocalAdmin) {
-                        await deleteLocationWithToken({ token: LOCAL_ADMIN_TOKEN, id: location.id });
+                        try {
+                          await deleteLocationWithToken({ token: LOCAL_ADMIN_TOKEN, id: location.id });
+                        } catch {
+                          await deleteLocation(location.id);
+                        }
                       } else {
                         await deleteLocation(location.id);
                       }

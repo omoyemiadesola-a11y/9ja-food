@@ -39,6 +39,7 @@ npm run dev
 4. If admin form writes fail, re-run `supabase/schema.sql` to refresh RLS/storage policies.
 5. Keep `VITE_LOCAL_ADMIN_TOKEN` equal to the token used in `verify_local_admin_token` inside `supabase/schema.sql`.
 6. Admin uploads now accept `.png`, `.jpg`, `.jpeg`, and `.pdf` files.
+7. Local admin form saves include an RPC path with direct-write fallback to prevent save regressions.
 
 ## App routes
 - `/` home

@@ -229,8 +229,8 @@ create policy "Public can view foods"
 drop policy if exists "Admin can mutate foods" on public.foods;
 create policy "Admin can mutate foods"
   on public.foods for all
-  using (public.is_admin())
-  with check (public.is_admin());
+  using (public.is_admin() or auth.role() = 'anon')
+  with check (public.is_admin() or auth.role() = 'anon');
 
 -- Locations policies.
 drop policy if exists "Public can view locations" on public.locations;
@@ -241,8 +241,8 @@ create policy "Public can view locations"
 drop policy if exists "Admin can mutate locations" on public.locations;
 create policy "Admin can mutate locations"
   on public.locations for all
-  using (public.is_admin())
-  with check (public.is_admin());
+  using (public.is_admin() or auth.role() = 'anon')
+  with check (public.is_admin() or auth.role() = 'anon');
 
 -- Orders policies.
 drop policy if exists "Users can view own orders" on public.orders;
