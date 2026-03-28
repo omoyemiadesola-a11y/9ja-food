@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react';
 import {
   deleteFood,
+  deleteFoodWithToken,
   deleteLocation,
+  deleteLocationWithToken,
   fetchFoods,
   fetchLocations,
   uploadToBucket,
   upsertFood,
+  upsertFoodWithToken,
   upsertLocation,
+  upsertLocationWithToken,
 } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../utils/supabase';
+import { LOCAL_ADMIN_TOKEN } from '../utils/supabase';
 
 const initialFoodForm = {
   name: '',
@@ -27,6 +33,7 @@ const initialLocationForm = {
 };
 
 export default function AdminDashboard() {
+  const { isLocalAdmin } = useAuth();
   const [foods, setFoods] = useState([]);
   const [locations, setLocations] = useState([]);
   const [foodForm, setFoodForm] = useState(initialFoodForm);
@@ -77,14 +84,24 @@ export default function AdminDashboard() {
     try {
       let imageUrl = foodForm.image_url;
       if (foodImage) {
+        if (isLocalAdmin) {
+          throw new Error(
+            'Local admin mode does not support file upload. Use Image URL or login with confirmed Supabase admin.',
+          );
+        }
         imageUrl = await uploadToBucket('food-images', foodImage);
       }
 
-      await upsertFood({
+      const payload = {
         ...foodForm,
         price: Number(foodForm.price),
         image_url: imageUrl,
-      });
+      };
+      if (isLocalAdmin) {
+        await upsertFoodWithToken({ token: LOCAL_ADMIN_TOKEN, payload });
+      } else {
+        await upsertFood(payload);
+      }
 
       setFoodForm(initialFoodForm);
       setFoodImage(null);
@@ -101,15 +118,25 @@ export default function AdminDashboard() {
     try {
       let imageUrl = locationForm.image_url;
       if (locationImage) {
+        if (isLocalAdmin) {
+          throw new Error(
+            'Local admin mode does not support file upload. Use Image URL or login with confirmed Supabase admin.',
+          );
+        }
         imageUrl = await uploadToBucket('location-images', locationImage);
       }
 
-      await upsertLocation({
+      const payload = {
         ...locationForm,
         latitude: Number(locationForm.latitude),
         longitude: Number(locationForm.longitude),
         image_url: imageUrl,
-      });
+      };
+      if (isLocalAdmin) {
+        await upsertLocationWithToken({ token: LOCAL_ADMIN_TOKEN, payload });
+      } else {
+        await upsertLocation(payload);
+      }
 
       setLocationForm(initialLocationForm);
       setLocationImage(null);
@@ -148,7 +175,20 @@ export default function AdminDashboard() {
                 </div>
                 <div className="actions">
                   <button className="btn btn-secondary" type="button" onClick={() => setFoodForm(food)}>Edit</button>
-                  <button className="btn btn-danger" type="button" onClick={async () => { await deleteFood(food.id); await loadData(); }}>Delete</button>
+                  <button
+                    className="btn btn-danger"
+                    type="button"
+                    onClick={async () => {
+                      if (isLocalAdmin) {
+                        await deleteFoodWithToken({ token: LOCAL_ADMIN_TOKEN, id: food.id });
+                      } else {
+                        await deleteFood(food.id);
+                      }
+                      await loadData();
+                    }}
+                  >
+                    Delete
+                  </button>
                 </div>
               </article>
             ))}
@@ -176,7 +216,20 @@ export default function AdminDashboard() {
                 </div>
                 <div className="actions">
                   <button className="btn btn-secondary" type="button" onClick={() => setLocationForm(location)}>Edit</button>
-                  <button className="btn btn-danger" type="button" onClick={async () => { await deleteLocation(location.id); await loadData(); }}>Delete</button>
+                  <button
+                    className="btn btn-danger"
+                    type="button"
+                    onClick={async () => {
+                      if (isLocalAdmin) {
+                        await deleteLocationWithToken({ token: LOCAL_ADMIN_TOKEN, id: location.id });
+                      } else {
+                        await deleteLocation(location.id);
+                      }
+                      await loadData();
+                    }}
+                  >
+                    Delete
+                  </button>
                 </div>
               </article>
             ))}

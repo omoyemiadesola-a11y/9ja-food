@@ -20,6 +20,7 @@ Create `.env`:
 VITE_SUPABASE_URL=...
 VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=...
 VITE_GOOGLE_MAPS_API_KEY=...
+VITE_LOCAL_ADMIN_TOKEN=LOCAL_ADMIN_9JA_TOKEN_CHANGE_ME
 ```
 
 ## Install and run
@@ -36,6 +37,7 @@ npm run dev
    - `food-images`
    - `location-images`
 4. If admin form writes fail, re-run `supabase/schema.sql` to refresh RLS/storage policies.
+5. Keep `VITE_LOCAL_ADMIN_TOKEN` equal to the token used in `verify_local_admin_token` inside `supabase/schema.sql`.
 
 ## App routes
 - `/` home

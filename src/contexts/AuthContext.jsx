@@ -28,12 +28,14 @@ export function AuthProvider({ children }) {
 
   const value = useMemo(() => {
     const user = session?.user ?? null;
+    const isLocalAdmin = localAdmin && !user;
     const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL || localAdmin;
 
     return {
       session,
       user,
       isAdmin,
+      isLocalAdmin,
       loading,
       async signUp(email, password, fullName) {
         const { data, error } = await supabase.auth.signUp({
