@@ -1,0 +1,6 @@
+<svg width="220" height="56" viewBox="0 0 220 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="220" height="56" rx="14" fill="#1F8B4C"/>
+  <circle cx="34" cy="28" r="16" fill="#fff"/>
+  <path d="M28 28h12M34 22v12" stroke="#8F1D2C" stroke-width="3" stroke-linecap="round"/>
+  <text x="58" y="36" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700" fill="white">9ja Food</text>
+</svg>
