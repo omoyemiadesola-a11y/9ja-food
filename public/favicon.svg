@@ -1,0 +1,6 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="12" fill="white"/>
+  <text x="9" y="45" font-family="Inter, Arial, sans-serif" font-size="40" font-weight="900" fill="#0B5B3F">9</text>
+  <rect x="20" y="6" width="40" height="14" rx="3" fill="#DB2020"/>
+  <text x="40" y="17" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="white">FOOD</text>
+</svg>
