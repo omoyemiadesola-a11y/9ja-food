@@ -1,0 +1,11 @@
+<svg width="320" height="110" viewBox="0 0 320 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="110" rx="18" fill="white"/>
+  <g transform="translate(14,10)">
+    <circle cx="34" cy="26" r="26" fill="#0B5B3F"/>
+    <rect x="4" y="20" width="60" height="18" fill="#DB2020"/>
+    <text x="34" y="33" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="white">SUCRES</text>
+  </g>
+  <text x="58" y="84" font-family="Inter, Arial, sans-serif" font-size="78" font-weight="800" fill="#0B5B3F">9ja</text>
+  <rect x="178" y="72" width="122" height="24" fill="#DB2020"/>
+  <text x="239" y="89" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="19" font-weight="800" fill="white">FOOD</text>
+</svg>
