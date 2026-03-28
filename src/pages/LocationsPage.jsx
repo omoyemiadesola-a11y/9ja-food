@@ -62,7 +62,20 @@ export default function LocationsPage() {
       <section className="grid locations-grid mt-md">
         {locations.map((location) => (
           <article key={location.id} className="card">
-            <img src={location.image_url || location.image} alt={location.name} className="card-image" />
+            {!(location.image_url || location.image) ? (
+              <div className="pdf-preview">
+                <p className="small">No media uploaded yet.</p>
+              </div>
+            ) : /\.pdf($|\?)/i.test(location.image_url || location.image || '') ? (
+              <div className="pdf-preview">
+                <p className="small">PDF branch media uploaded.</p>
+                <a href={location.image_url || location.image} target="_blank" rel="noreferrer" className="text-link">
+                  Open PDF
+                </a>
+              </div>
+            ) : (
+              <img src={location.image_url || location.image} alt={location.name} className="card-image" />
+            )}
             <h3>{location.name}</h3>
             <p>{location.address}</p>
             <p className="small">Lat: {location.latitude} • Lng: {location.longitude}</p>

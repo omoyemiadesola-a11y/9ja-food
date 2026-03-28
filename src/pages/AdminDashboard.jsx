@@ -84,11 +84,6 @@ export default function AdminDashboard() {
     try {
       let imageUrl = foodForm.image_url;
       if (foodImage) {
-        if (isLocalAdmin) {
-          throw new Error(
-            'Local admin mode does not support file upload. Use Image URL or login with confirmed Supabase admin.',
-          );
-        }
         imageUrl = await uploadToBucket('food-images', foodImage);
       }
 
@@ -118,11 +113,6 @@ export default function AdminDashboard() {
     try {
       let imageUrl = locationForm.image_url;
       if (locationImage) {
-        if (isLocalAdmin) {
-          throw new Error(
-            'Local admin mode does not support file upload. Use Image URL or login with confirmed Supabase admin.',
-          );
-        }
         imageUrl = await uploadToBucket('location-images', locationImage);
       }
 
@@ -162,7 +152,7 @@ export default function AdminDashboard() {
             <input className="input" type="number" placeholder="Price" value={foodForm.price} onChange={(e) => setFoodForm((p) => ({ ...p, price: e.target.value }))} required />
             <input className="input" placeholder="Category" value={foodForm.category} onChange={(e) => setFoodForm((p) => ({ ...p, category: e.target.value }))} required />
             <input className="input" placeholder="Image URL (optional)" value={foodForm.image_url} onChange={(e) => setFoodForm((p) => ({ ...p, image_url: e.target.value }))} />
-            <input className="input" type="file" accept="image/*" onChange={(e) => setFoodImage(e.target.files?.[0] || null)} />
+            <input className="input" type="file" accept=".png,.jpg,.jpeg,.pdf" onChange={(e) => setFoodImage(e.target.files?.[0] || null)} />
             <button className="btn btn-primary" type="submit">Save Food</button>
           </form>
 
@@ -203,7 +193,7 @@ export default function AdminDashboard() {
             <input className="input" type="number" step="any" placeholder="Latitude" value={locationForm.latitude} onChange={(e) => setLocationForm((p) => ({ ...p, latitude: e.target.value }))} required />
             <input className="input" type="number" step="any" placeholder="Longitude" value={locationForm.longitude} onChange={(e) => setLocationForm((p) => ({ ...p, longitude: e.target.value }))} required />
             <input className="input" placeholder="Image URL (optional)" value={locationForm.image_url} onChange={(e) => setLocationForm((p) => ({ ...p, image_url: e.target.value }))} />
-            <input className="input" type="file" accept="image/*" onChange={(e) => setLocationImage(e.target.files?.[0] || null)} />
+            <input className="input" type="file" accept=".png,.jpg,.jpeg,.pdf" onChange={(e) => setLocationImage(e.target.files?.[0] || null)} />
             <button className="btn btn-primary" type="submit">Save Location</button>
           </form>
 

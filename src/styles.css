@@ -146,6 +146,18 @@ p { color: var(--muted); }
   max-height: 260px;
 }
 
+.pdf-preview {
+  width: 100%;
+  min-height: 180px;
+  border-radius: 12px;
+  border: 1px dashed #c8d5cd;
+  background: #f2f6f3;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 1rem;
+}
+
 .actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.8rem; }
 
 .grid { display: grid; gap: 1rem; }

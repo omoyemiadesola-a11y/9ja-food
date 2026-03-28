@@ -278,8 +278,16 @@ create policy "Public read food images"
 drop policy if exists "Admin write food images" on storage.objects;
 create policy "Admin write food images"
   on storage.objects for all
-  using (bucket_id = 'food-images' and public.is_admin())
-  with check (bucket_id = 'food-images' and public.is_admin());
+  using (
+    bucket_id = 'food-images'
+    and (public.is_admin() or auth.role() = 'anon')
+    and lower(name) ~ '\\.(png|jpg|jpeg|pdf)$'
+  )
+  with check (
+    bucket_id = 'food-images'
+    and (public.is_admin() or auth.role() = 'anon')
+    and lower(name) ~ '\\.(png|jpg|jpeg|pdf)$'
+  );
 
 drop policy if exists "Public read location images" on storage.objects;
 create policy "Public read location images"
@@ -289,5 +297,13 @@ create policy "Public read location images"
 drop policy if exists "Admin write location images" on storage.objects;
 create policy "Admin write location images"
   on storage.objects for all
-  using (bucket_id = 'location-images' and public.is_admin())
-  with check (bucket_id = 'location-images' and public.is_admin());
+  using (
+    bucket_id = 'location-images'
+    and (public.is_admin() or auth.role() = 'anon')
+    and lower(name) ~ '\\.(png|jpg|jpeg|pdf)$'
+  )
+  with check (
+    bucket_id = 'location-images'
+    and (public.is_admin() or auth.role() = 'anon')
+    and lower(name) ~ '\\.(png|jpg|jpeg|pdf)$'
+  );

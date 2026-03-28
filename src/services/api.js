@@ -36,8 +36,18 @@ export async function fetchMyOrders(userId) {
 }
 
 export async function uploadToBucket(bucket, file) {
-  const path = `${Date.now()}-${file.name}`;
-  const { error: uploadError } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  const allowed = ['png', 'jpg', 'jpeg', 'pdf'];
+  if (!extension || !allowed.includes(extension)) {
+    throw new Error('Only PNG, JPG, JPEG, or PDF files are allowed.');
+  }
+
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
+  const path = `${Date.now()}-${safeName}`;
+  const { error: uploadError } = await supabase.storage.from(bucket).upload(path, file, {
+    upsert: true,
+    contentType: file.type || (extension === 'pdf' ? 'application/pdf' : `image/${extension}`),
+  });
   if (uploadError) throw uploadError;
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
