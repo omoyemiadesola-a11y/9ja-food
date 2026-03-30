@@ -16,5 +16,3 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
 });
 
 export const ADMIN_EMAIL = '9jafoodsucres@gmail.com';
-export const LOCAL_ADMIN_TOKEN =
-  import.meta.env.VITE_LOCAL_ADMIN_TOKEN || 'LOCAL_ADMIN_9JA_TOKEN_CHANGE_ME';

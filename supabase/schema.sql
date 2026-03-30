@@ -82,132 +82,11 @@ as $$
   );
 $$;
 
-create or replace function public.verify_local_admin_token(p_token text)
-returns boolean
-language sql
-stable
-as $$
-  select p_token = 'LOCAL_ADMIN_9JA_TOKEN_CHANGE_ME';
-$$;
-
-create or replace function public.admin_upsert_food(
-  p_token text,
-  p_id uuid,
-  p_name text,
-  p_description text,
-  p_price numeric,
-  p_image_url text,
-  p_category text
-)
-returns public.foods
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_row public.foods;
-begin
-  if not public.verify_local_admin_token(p_token) then
-    raise exception 'Invalid admin token';
-  end if;
-
-  if p_id is null then
-    insert into public.foods (name, description, price, image_url, category)
-    values (p_name, p_description, p_price, p_image_url, p_category)
-    returning * into v_row;
-  else
-    update public.foods
-    set
-      name = p_name,
-      description = p_description,
-      price = p_price,
-      image_url = p_image_url,
-      category = p_category,
-      updated_at = now()
-    where id = p_id
-    returning * into v_row;
-  end if;
-
-  return v_row;
-end;
-$$;
-
-create or replace function public.admin_delete_food(p_token text, p_id uuid)
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  if not public.verify_local_admin_token(p_token) then
-    raise exception 'Invalid admin token';
-  end if;
-
-  delete from public.foods where id = p_id;
-end;
-$$;
-
-create or replace function public.admin_upsert_location(
-  p_token text,
-  p_id uuid,
-  p_name text,
-  p_address text,
-  p_latitude double precision,
-  p_longitude double precision,
-  p_image_url text
-)
-returns public.locations
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_row public.locations;
-begin
-  if not public.verify_local_admin_token(p_token) then
-    raise exception 'Invalid admin token';
-  end if;
-
-  if p_id is null then
-    insert into public.locations (name, address, latitude, longitude, image_url)
-    values (p_name, p_address, p_latitude, p_longitude, p_image_url)
-    returning * into v_row;
-  else
-    update public.locations
-    set
-      name = p_name,
-      address = p_address,
-      latitude = p_latitude,
-      longitude = p_longitude,
-      image_url = p_image_url,
-      updated_at = now()
-    where id = p_id
-    returning * into v_row;
-  end if;
-
-  return v_row;
-end;
-$$;
-
-create or replace function public.admin_delete_location(p_token text, p_id uuid)
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  if not public.verify_local_admin_token(p_token) then
-    raise exception 'Invalid admin token';
-  end if;
-
-  delete from public.locations where id = p_id;
-end;
-$$;
-
-grant execute on function public.admin_upsert_food(text, uuid, text, text, numeric, text, text) to anon, authenticated;
-grant execute on function public.admin_delete_food(text, uuid) to anon, authenticated;
-grant execute on function public.admin_upsert_location(text, uuid, text, text, double precision, double precision, text) to anon, authenticated;
-grant execute on function public.admin_delete_location(text, uuid) to anon, authenticated;
+drop function if exists public.verify_local_admin_token(text);
+drop function if exists public.admin_upsert_food(text, uuid, text, text, numeric, text, text);
+drop function if exists public.admin_delete_food(text, uuid);
+drop function if exists public.admin_upsert_location(text, uuid, text, text, double precision, double precision, text);
+drop function if exists public.admin_delete_location(text, uuid);
 
 -- Profiles policies.
 drop policy if exists "Users can view own profile" on public.profiles;
@@ -229,8 +108,8 @@ create policy "Public can view foods"
 drop policy if exists "Admin can mutate foods" on public.foods;
 create policy "Admin can mutate foods"
   on public.foods for all
-  using (public.is_admin() or auth.role() = 'anon')
-  with check (public.is_admin() or auth.role() = 'anon');
+  using (auth.jwt() ->> 'email' = '9jafoodsucres@gmail.com')
+  with check (auth.jwt() ->> 'email' = '9jafoodsucres@gmail.com');
 
 -- Locations policies.
 drop policy if exists "Public can view locations" on public.locations;
@@ -241,8 +120,8 @@ create policy "Public can view locations"
 drop policy if exists "Admin can mutate locations" on public.locations;
 create policy "Admin can mutate locations"
   on public.locations for all
-  using (public.is_admin() or auth.role() = 'anon')
-  with check (public.is_admin() or auth.role() = 'anon');
+  using (auth.jwt() ->> 'email' = '9jafoodsucres@gmail.com')
+  with check (auth.jwt() ->> 'email' = '9jafoodsucres@gmail.com');
 
 -- Orders policies.
 drop policy if exists "Users can view own orders" on public.orders;
@@ -280,12 +159,14 @@ create policy "Admin write food images"
   on storage.objects for all
   using (
     bucket_id = 'food-images'
-    and (public.is_admin() or auth.role() = 'anon')
+    and auth.role() = 'authenticated'
+    and auth.jwt() ->> 'email' = '9jafoodsucres@gmail.com'
     and lower(name) ~ '\\.(png|jpg|jpeg|pdf)$'
   )
   with check (
     bucket_id = 'food-images'
-    and (public.is_admin() or auth.role() = 'anon')
+    and auth.role() = 'authenticated'
+    and auth.jwt() ->> 'email' = '9jafoodsucres@gmail.com'
     and lower(name) ~ '\\.(png|jpg|jpeg|pdf)$'
   );
 
@@ -299,11 +180,13 @@ create policy "Admin write location images"
   on storage.objects for all
   using (
     bucket_id = 'location-images'
-    and (public.is_admin() or auth.role() = 'anon')
+    and auth.role() = 'authenticated'
+    and auth.jwt() ->> 'email' = '9jafoodsucres@gmail.com'
     and lower(name) ~ '\\.(png|jpg|jpeg|pdf)$'
   )
   with check (
     bucket_id = 'location-images'
-    and (public.is_admin() or auth.role() = 'anon')
+    and auth.role() = 'authenticated'
+    and auth.jwt() ->> 'email' = '9jafoodsucres@gmail.com'
     and lower(name) ~ '\\.(png|jpg|jpeg|pdf)$'
   );

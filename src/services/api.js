@@ -59,31 +59,8 @@ export async function upsertFood(payload) {
   return data;
 }
 
-export async function upsertFoodWithToken({ token, payload }) {
-  const { data, error } = await supabase
-    .rpc('admin_upsert_food', {
-      p_token: token,
-      p_id: payload.id ?? null,
-      p_name: payload.name,
-      p_description: payload.description,
-      p_price: payload.price,
-      p_image_url: payload.image_url ?? null,
-      p_category: payload.category,
-    });
-  if (error) throw error;
-  return data;
-}
-
 export async function deleteFood(id) {
   const { error } = await supabase.from('foods').delete().eq('id', id);
-  if (error) throw error;
-}
-
-export async function deleteFoodWithToken({ token, id }) {
-  const { error } = await supabase.rpc('admin_delete_food', {
-    p_token: token,
-    p_id: id,
-  });
   if (error) throw error;
 }
 
@@ -93,30 +70,7 @@ export async function upsertLocation(payload) {
   return data;
 }
 
-export async function upsertLocationWithToken({ token, payload }) {
-  const { data, error } = await supabase
-    .rpc('admin_upsert_location', {
-      p_token: token,
-      p_id: payload.id ?? null,
-      p_name: payload.name,
-      p_address: payload.address,
-      p_latitude: payload.latitude,
-      p_longitude: payload.longitude,
-      p_image_url: payload.image_url ?? null,
-    });
-  if (error) throw error;
-  return data;
-}
-
 export async function deleteLocation(id) {
   const { error } = await supabase.from('locations').delete().eq('id', id);
-  if (error) throw error;
-}
-
-export async function deleteLocationWithToken({ token, id }) {
-  const { error } = await supabase.rpc('admin_delete_location', {
-    p_token: token,
-    p_id: id,
-  });
   if (error) throw error;
 }
