@@ -1,8 +1,10 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import Footer from './components/Footer';
-import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
-import { useAuth } from './contexts/AuthContext';
+
+import PublicLayout from './components/PublicLayout';
+import UserLayout from './components/UserLayout';
+import AdminLayout from './components/AdminLayout';
+
 import AdminDashboard from './pages/AdminDashboard';
 import AuthPage from './pages/AuthPage';
 import CartPage from './pages/CartPage';
@@ -12,45 +14,67 @@ import MenuPage from './pages/MenuPage';
 import OrdersPage from './pages/OrdersPage';
 
 export default function App() {
-  const { isAdmin } = useAuth();
-
   return (
     <div className="app-shell">
-      <Navbar />
-      <main className="main-content">
-        <Routes>
+      <Routes>
+        <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/auth" element={<AuthPage />} />
-          <Route path="/menu" element={<MenuPage />} />
-          <Route path="/locations" element={<LocationsPage />} />
-          <Route
-            path="/cart"
-            element={
-              <ProtectedRoute>
+        </Route>
+
+        <Route
+          path="/menu"
+          element={
+            <UserLayout>
+              <MenuPage />
+            </UserLayout>
+          }
+        />
+
+        <Route
+          path="/locations"
+          element={
+            <UserLayout>
+              <LocationsPage />
+            </UserLayout>
+          }
+        />
+
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute>
+              <UserLayout>
                 <CartPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/orders"
-            element={
-              <ProtectedRoute>
+              </UserLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <UserLayout>
                 <OrdersPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute adminOnly>
+              </UserLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute adminOnly>
+              <AdminLayout>
                 <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<Navigate to={isAdmin ? '/admin' : '/'} replace />} />
-        </Routes>
-      </main>
-      <Footer />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   );
 }
