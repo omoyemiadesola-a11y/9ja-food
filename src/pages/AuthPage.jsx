@@ -102,12 +102,8 @@ export default function AuthPage() {
         {message && <p className="mt-sm">{message}</p>}
       </form>
 
-      {isAdmin && <p className="small">Admin account authenticated.</p>}
-      {!isSignup && (
-        <Link className="btn btn-primary mt-sm" to="/auth?mode=signup">
-          Sign up
-        </Link>
-      )}
+      
+      
     </div>
   );
 }
