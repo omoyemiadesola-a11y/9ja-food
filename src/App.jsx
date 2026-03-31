@@ -1,7 +1,8 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import AdminNavbar from './components/AdminNavbar';
+import Footer from './components/Footer';
+import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
-import PublicLayout from './components/PublicLayout';
 import UserNavbar from './components/UserNavbar';
 import { useAuth } from './contexts/AuthContext';
 import AdminDashboard from './pages/AdminDashboard';
@@ -20,15 +21,13 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {showAdminNav ? <AdminNavbar /> : showUserNav ? <UserNavbar /> : null}
-      <main className={showAdminNav || showUserNav ? 'main-content' : ''}>
+      {showAdminNav ? <AdminNavbar /> : showUserNav ? <UserNavbar /> : <Navbar />}
+      <main className="main-content">
         <Routes>
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/menu" element={<MenuPage />} />
-            <Route path="/locations" element={<LocationsPage />} />
-          </Route>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/menu" element={<MenuPage />} />
+          <Route path="/locations" element={<LocationsPage />} />
           <Route
             path="/cart"
             element={
@@ -56,6 +55,7 @@ export default function App() {
           <Route path="*" element={<Navigate to={isAdmin ? '/admin' : '/'} replace />} />
         </Routes>
       </main>
+      {!showAdminNav && <Footer />}
     </div>
   );
 }

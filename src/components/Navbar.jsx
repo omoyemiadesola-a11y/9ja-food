@@ -18,6 +18,7 @@ export default function Navbar() {
         </Link>
 
         <div className="nav-links desktop-only">
+          <button className="back-link" type="button" onClick={() => navigate(-1)}>← Back</button>
           <NavLink to="/">Home</NavLink>
           <NavLink to="/menu">Menu</NavLink>
           <NavLink to="/locations">Locations</NavLink>

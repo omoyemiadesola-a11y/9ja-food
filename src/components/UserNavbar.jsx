@@ -15,6 +15,7 @@ export default function UserNavbar() {
       <nav className="container nav">
         <NavLink to="/" className="brand"><img src="/logo.svg" alt="9ja Food logo" className="logo" /></NavLink>
         <div className="nav-links desktop-only">
+          <button className="back-link" type="button" onClick={() => navigate(-1)}>← Back</button>
           <NavLink to="/menu">Menu</NavLink>
           <NavLink to="/cart">Cart</NavLink>
           <NavLink to="/orders">My Orders</NavLink>

@@ -70,6 +70,14 @@ p { color: var(--muted); }
 
 .nav-actions { display: flex; align-items: center; gap: 0.5rem; }
 
+.back-link {
+  border: none;
+  background: transparent;
+  color: var(--green-dark);
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .mobile-nav {
   position: fixed;
   bottom: 0;

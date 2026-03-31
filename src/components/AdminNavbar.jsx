@@ -15,6 +15,7 @@ export default function AdminNavbar() {
       <nav className="container nav">
         <NavLink to="/admin" className="brand"><img src="/logo.svg" alt="9ja Food logo" className="logo" /></NavLink>
         <div className="nav-links desktop-only">
+          <button className="back-link" type="button" onClick={() => navigate(-1)}>← Back</button>
           <NavLink to="/admin">Dashboard</NavLink>
           <NavLink to="/menu">Menu</NavLink>
           <NavLink to="/locations">Locations</NavLink>
