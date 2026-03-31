@@ -41,22 +41,8 @@ export default function AuthPage() {
   return (
     <div className="container section auth-wrap">
       <form className="card auth-card" onSubmit={handleSubmit}>
-        <h1>{isSignup ? 'Create Account' : 'Login'}</h1>
-        {!isSignup && (
-          <p className="small">
-            New to 9ja Food?{' '}
-            <button
-              type="button"
-              className="link-btn"
-              onClick={() => {
-                setIsSignup(true);
-                setSearchParams({ mode: 'signup' });
-              }}
-            >
-              Create account
-            </button>
-          </p>
-        )}
+        
+        
         {isSignup && (
           <input
             className="input"
@@ -102,12 +88,6 @@ export default function AuthPage() {
         {message && <p className="mt-sm">{message}</p>}
       </form>
 
-      {isAdmin && <p className="small">Admin account authenticated.</p>}
-      {!isSignup && (
-        <Link className="btn btn-primary mt-sm" to="/auth?mode=signup">
-          Sign up
-        </Link>
-      )}
     </div>
   );
 }
