@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function AdminNavbar() {
@@ -11,26 +11,18 @@ export default function AdminNavbar() {
   };
 
   return (
-    <header className="nav-shell">
+    <header className="nav-shell admin-shell">
       <nav className="container nav">
-        <Link to="/admin" className="brand">
-          <img src="/logo.svg" alt="9ja Food logo" className="logo" />
-        </Link>
-
+        <NavLink to="/admin" className="brand"><img src="/logo.svg" alt="9ja Food logo" className="logo" /></NavLink>
         <div className="nav-links desktop-only">
           <NavLink to="/admin">Dashboard</NavLink>
+          <NavLink to="/menu">Menu</NavLink>
+          <NavLink to="/locations">Locations</NavLink>
         </div>
-
         <div className="nav-actions">
-          {user?.email && <span className="small desktop-only">{user.email}</span>}
-          <button className="btn btn-secondary" onClick={handleSignOut} type="button">
-            Sign out
-          </button>
+          <span className="small desktop-only">Admin: {user?.email}</span>
+          <button className="btn btn-secondary" onClick={handleSignOut} type="button">Sign out</button>
         </div>
-      </nav>
-
-      <nav className="mobile-nav">
-        <NavLink to="/admin">Dashboard</NavLink>
       </nav>
     </header>
   );

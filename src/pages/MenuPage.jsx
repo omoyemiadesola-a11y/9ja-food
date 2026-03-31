@@ -14,7 +14,7 @@ export default function MenuPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { addToCart } = useCart();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -78,7 +78,7 @@ export default function MenuPage() {
 
       <section className="grid foods-grid mt-md">
         {filteredFoods.map((food) => (
-          <FoodCard key={food.id} food={food} onAdd={handleFoodClick} />
+          <FoodCard key={food.id} food={food} onAdd={isAdmin ? null : handleFoodClick} />
         ))}
       </section>
     </div>

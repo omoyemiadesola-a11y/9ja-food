@@ -1,15 +1,19 @@
 import { Outlet } from 'react-router-dom';
 import Footer from './Footer';
 import Navbar from './Navbar';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function PublicLayout() {
+  const { user, isAdmin } = useAuth();
+  const showPublicChrome = !user && !isAdmin;
+
   return (
-    <>
-      <Navbar />
+    <div className="app-shell">
+      {showPublicChrome && <Navbar />}
       <main className="main-content">
         <Outlet />
       </main>
-      <Footer />
-    </>
+      {showPublicChrome && <Footer />}
+    </div>
   );
 }

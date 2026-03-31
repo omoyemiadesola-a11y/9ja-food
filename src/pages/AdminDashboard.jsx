@@ -4,6 +4,8 @@ import {
   deleteLocation,
   fetchFoods,
   fetchLocations,
+  fetchAllOrders,
+  fetchAdminStats,
   uploadToBucket,
   upsertFood,
   upsertLocation,
@@ -11,7 +13,6 @@ import {
 import { supabase } from '../utils/supabase';
 
 const initialFoodForm = {
-  id: null,
   name: '',
   description: '',
   price: '',
@@ -20,7 +21,6 @@ const initialFoodForm = {
 };
 
 const initialLocationForm = {
-  id: null,
   name: '',
   address: '',
   latitude: '',
@@ -35,166 +35,73 @@ export default function AdminDashboard() {
   const [locationForm, setLocationForm] = useState(initialLocationForm);
   const [foodImage, setFoodImage] = useState(null);
   const [locationImage, setLocationImage] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [stats, setStats] = useState({ usersCount: 0, ordersCount: 0 });
   const [status, setStatus] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [authChecked, setAuthChecked] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  const resetFoodForm = () => {
-    setFoodForm(initialFoodForm);
-    setFoodImage(null);
-  };
-
-  const resetLocationForm = () => {
-    setLocationForm(initialLocationForm);
-    setLocationImage(null);
-  };
-
-  const checkAdminAccess = async () => {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError) {
-      throw userError;
-    }
-
-    setCurrentUser(user || null);
-
-    if (!user) {
-      setIsAdmin(false);
-      setAuthChecked(true);
-      return false;
-    }
-
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, full_name, role')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError) {
-      throw profileError;
-    }
-
-    const adminStatus = profile?.role === 'admin';
-    setIsAdmin(adminStatus);
-    setAuthChecked(true);
-
-    return adminStatus;
-  };
 
   const loadData = async () => {
-    const [foodData, locationData] = await Promise.all([
+    const [foodData, locationData, orderData, statData] = await Promise.all([
       fetchFoods(),
       fetchLocations(),
+      fetchAllOrders(),
+      fetchAdminStats(),
     ]);
-
-    setFoods(Array.isArray(foodData) ? foodData : []);
-    setLocations(Array.isArray(locationData) ? locationData : []);
+    setFoods(foodData);
+    setLocations(locationData);
+    setOrders(orderData);
+    setStats(statData);
   };
 
   useEffect(() => {
-    let mounted = true;
-    let foodsChannel;
-    let locationsChannel;
+    loadData();
+    const foodsChannel = supabase
+      .channel('admin-foods-sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'foods' },
+        () => {
+          loadData();
+        },
+      )
+      .subscribe();
 
-    const init = async () => {
-      setLoading(true);
-      setStatus('');
-
-      try {
-        const adminStatus = await checkAdminAccess();
-
-        if (!mounted) return;
-
-        if (!adminStatus) {
-          setStatus('Access denied. You must be signed in as an admin.');
-          setLoading(false);
-          return;
-        }
-
-        await loadData();
-
-        foodsChannel = supabase
-          .channel('admin-foods-sync')
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'foods' },
-            async () => {
-              await loadData();
-            }
-          )
-          .subscribe();
-
-        locationsChannel = supabase
-          .channel('admin-locations-sync')
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'locations' },
-            async () => {
-              await loadData();
-            }
-          )
-          .subscribe();
-      } catch (error) {
-        if (mounted) {
-          setStatus(`Admin setup failed: ${error.message}`);
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    init();
+    const locationsChannel = supabase
+      .channel('admin-locations-sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'locations' },
+        () => {
+          loadData();
+        },
+      )
+      .subscribe();
 
     return () => {
-      mounted = false;
-      if (foodsChannel) supabase.removeChannel(foodsChannel);
-      if (locationsChannel) supabase.removeChannel(locationsChannel);
+      supabase.removeChannel(foodsChannel);
+      supabase.removeChannel(locationsChannel);
     };
   }, []);
 
   const submitFood = async (event) => {
     event.preventDefault();
     setStatus('');
-
     try {
-      const adminStatus = await checkAdminAccess();
-      if (!adminStatus) {
-        throw new Error('Only admin can save food.');
-      }
-
       let imageUrl = foodForm.image_url;
-
       if (foodImage) {
         imageUrl = await uploadToBucket('food-images', foodImage);
       }
 
       const payload = {
-        ...(foodForm.id ? { id: foodForm.id } : {}),
-        name: foodForm.name.trim(),
-        description: foodForm.description.trim(),
+        ...foodForm,
         price: Number(foodForm.price),
-        category: foodForm.category.trim(),
-        image_url: imageUrl || null,
+        image_url: imageUrl,
       };
-
-      if (!payload.name) throw new Error('Food name is required.');
-      if (!payload.description) throw new Error('Food description is required.');
-      if (!payload.category) throw new Error('Food category is required.');
-      if (Number.isNaN(payload.price) || payload.price <= 0) {
-        throw new Error('Food price must be a valid number greater than zero.');
-      }
-
       await upsertFood(payload);
+
+      setFoodForm(initialFoodForm);
+      setFoodImage(null);
       await loadData();
-      resetFoodForm();
-      setStatus(foodForm.id ? 'Food updated successfully.' : 'Food saved successfully.');
+      setStatus('Food saved and synced successfully.');
     } catch (error) {
       setStatus(`Food save failed: ${error.message}`);
     }
@@ -203,221 +110,60 @@ export default function AdminDashboard() {
   const submitLocation = async (event) => {
     event.preventDefault();
     setStatus('');
-
     try {
-      const adminStatus = await checkAdminAccess();
-      if (!adminStatus) {
-        throw new Error('Only admin can save location.');
-      }
-
       let imageUrl = locationForm.image_url;
-
       if (locationImage) {
         imageUrl = await uploadToBucket('location-images', locationImage);
       }
 
       const payload = {
-        ...(locationForm.id ? { id: locationForm.id } : {}),
-        name: locationForm.name.trim(),
-        address: locationForm.address.trim(),
+        ...locationForm,
         latitude: Number(locationForm.latitude),
         longitude: Number(locationForm.longitude),
-        image_url: imageUrl || null,
+        image_url: imageUrl,
       };
-
-      if (!payload.name) throw new Error('Location name is required.');
-      if (!payload.address) throw new Error('Location address is required.');
-      if (Number.isNaN(payload.latitude)) throw new Error('Latitude must be a valid number.');
-      if (Number.isNaN(payload.longitude)) throw new Error('Longitude must be a valid number.');
-
       await upsertLocation(payload);
+
+      setLocationForm(initialLocationForm);
+      setLocationImage(null);
       await loadData();
-      resetLocationForm();
-      setStatus(locationForm.id ? 'Location updated successfully.' : 'Location saved successfully.');
+      setStatus('Location saved and synced successfully.');
     } catch (error) {
       setStatus(`Location save failed: ${error.message}`);
     }
   };
 
-  const handleEditFood = (food) => {
-    setFoodForm({
-      id: food.id ?? null,
-      name: food.name ?? '',
-      description: food.description ?? '',
-      price: food.price ?? '',
-      category: food.category ?? 'African',
-      image_url: food.image_url ?? '',
-    });
-    setFoodImage(null);
-    setStatus(`Editing "${food.name}".`);
-  };
-
-  const handleEditLocation = (location) => {
-    setLocationForm({
-      id: location.id ?? null,
-      name: location.name ?? '',
-      address: location.address ?? '',
-      latitude: location.latitude ?? '',
-      longitude: location.longitude ?? '',
-      image_url: location.image_url ?? '',
-    });
-    setLocationImage(null);
-    setStatus(`Editing "${location.name}".`);
-  };
-
-  const handleDeleteFood = async (foodId) => {
-    setStatus('');
-
-    try {
-      const adminStatus = await checkAdminAccess();
-      if (!adminStatus) {
-        throw new Error('Only admin can delete food.');
-      }
-
-      await deleteFood(foodId);
-      await loadData();
-
-      if (foodForm.id === foodId) {
-        resetFoodForm();
-      }
-
-      setStatus('Food deleted successfully.');
-    } catch (error) {
-      setStatus(`Food delete failed: ${error.message}`);
-    }
-  };
-
-  const handleDeleteLocation = async (locationId) => {
-    setStatus('');
-
-    try {
-      const adminStatus = await checkAdminAccess();
-      if (!adminStatus) {
-        throw new Error('Only admin can delete location.');
-      }
-
-      await deleteLocation(locationId);
-      await loadData();
-
-      if (locationForm.id === locationId) {
-        resetLocationForm();
-      }
-
-      setStatus('Location deleted successfully.');
-    } catch (error) {
-      setStatus(`Location delete failed: ${error.message}`);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="container section">
-        <h1>Admin Dashboard</h1>
-        <p className="mt-sm">Loading admin dashboard...</p>
-      </div>
-    );
-  }
-
-  if (authChecked && !isAdmin) {
-    return (
-      <div className="container section">
-        <h1>Admin Dashboard</h1>
-        <p className="mt-sm">
-          Access denied. Sign in with the admin account to manage foods and locations.
-        </p>
-        {currentUser?.email && (
-          <p className="mt-sm">Current signed-in account: {currentUser.email}</p>
-        )}
-        {status && <p className="mt-sm">{status}</p>}
-      </div>
-    );
-  }
-
   return (
     <div className="container section">
       <h1>Admin Dashboard</h1>
-
-      {currentUser?.email && (
-        <p className="mt-sm">Signed in as: {currentUser.email}</p>
-      )}
-
+      <p>Manage foods and locations with full CRUD control.</p>
       {status && <p className="mt-sm">{status}</p>}
+      <div className="grid quick-stats mt-sm">
+        <article className="card">
+          <p className="small">Total Users</p>
+          <h2>{stats.usersCount}</h2>
+        </article>
+        <article className="card">
+          <p className="small">Total Orders</p>
+          <h2>{stats.ordersCount}</h2>
+        </article>
+        <article className="card">
+          <p className="small">Transactions</p>
+          <h2>{orders.length}</h2>
+        </article>
+      </div>
 
       <div className="split-layout mt-md">
         <section>
           <h2>Foods</h2>
-
           <form className="card form" onSubmit={submitFood}>
-            <input
-              className="input"
-              placeholder="Name"
-              value={foodForm.name}
-              onChange={(e) =>
-                setFoodForm((prev) => ({ ...prev, name: e.target.value }))
-              }
-              required
-            />
-
-            <textarea
-              className="input"
-              placeholder="Description"
-              value={foodForm.description}
-              onChange={(e) =>
-                setFoodForm((prev) => ({ ...prev, description: e.target.value }))
-              }
-              required
-            />
-
-            <input
-              className="input"
-              type="number"
-              step="0.01"
-              placeholder="Price"
-              value={foodForm.price}
-              onChange={(e) =>
-                setFoodForm((prev) => ({ ...prev, price: e.target.value }))
-              }
-              required
-            />
-
-            <input
-              className="input"
-              placeholder="Category"
-              value={foodForm.category}
-              onChange={(e) =>
-                setFoodForm((prev) => ({ ...prev, category: e.target.value }))
-              }
-              required
-            />
-
-            <input
-              className="input"
-              placeholder="Image URL (optional)"
-              value={foodForm.image_url}
-              onChange={(e) =>
-                setFoodForm((prev) => ({ ...prev, image_url: e.target.value }))
-              }
-            />
-
-            <input
-              className="input"
-              type="file"
-              accept=".png,.jpg,.jpeg,.pdf,.webp"
-              onChange={(e) => setFoodImage(e.target.files?.[0] || null)}
-            />
-
-            <div className="actions">
-              <button className="btn btn-primary" type="submit">
-                {foodForm.id ? 'Update Food' : 'Save Food'}
-              </button>
-              <button
-                className="btn btn-secondary"
-                type="button"
-                onClick={resetFoodForm}
-              >
-                Reset
-              </button>
-            </div>
+            <input className="input" placeholder="Name" value={foodForm.name} onChange={(e) => setFoodForm((p) => ({ ...p, name: e.target.value }))} required />
+            <textarea className="input" placeholder="Description" value={foodForm.description} onChange={(e) => setFoodForm((p) => ({ ...p, description: e.target.value }))} required />
+            <input className="input" type="number" placeholder="Price" value={foodForm.price} onChange={(e) => setFoodForm((p) => ({ ...p, price: e.target.value }))} required />
+            <input className="input" placeholder="Category" value={foodForm.category} onChange={(e) => setFoodForm((p) => ({ ...p, category: e.target.value }))} required />
+            <input className="input" placeholder="Image URL (optional)" value={foodForm.image_url} onChange={(e) => setFoodForm((p) => ({ ...p, image_url: e.target.value }))} />
+            <input className="input" type="file" accept=".png,.jpg,.jpeg,.pdf" onChange={(e) => setFoodImage(e.target.files?.[0] || null)} />
+            <button className="btn btn-primary" type="submit">Save Food</button>
           </form>
 
           <div className="stack mt-sm">
@@ -426,22 +172,16 @@ export default function AdminDashboard() {
                 <div>
                   <h3>{food.name}</h3>
                   <p>{food.category} • ₦{Number(food.price).toLocaleString()}</p>
-                  {food.description && <p>{food.description}</p>}
                 </div>
-
                 <div className="actions">
-                  <button
-                    className="btn btn-secondary"
-                    type="button"
-                    onClick={() => handleEditFood(food)}
-                  >
-                    Edit
-                  </button>
-
+                  <button className="btn btn-secondary" type="button" onClick={() => setFoodForm(food)}>Edit</button>
                   <button
                     className="btn btn-danger"
                     type="button"
-                    onClick={() => handleDeleteFood(food.id)}
+                    onClick={async () => {
+                      await deleteFood(food.id);
+                      await loadData();
+                    }}
                   >
                     Delete
                   </button>
@@ -453,80 +193,14 @@ export default function AdminDashboard() {
 
         <section>
           <h2>Locations</h2>
-
           <form className="card form" onSubmit={submitLocation}>
-            <input
-              className="input"
-              placeholder="Name"
-              value={locationForm.name}
-              onChange={(e) =>
-                setLocationForm((prev) => ({ ...prev, name: e.target.value }))
-              }
-              required
-            />
-
-            <input
-              className="input"
-              placeholder="Address"
-              value={locationForm.address}
-              onChange={(e) =>
-                setLocationForm((prev) => ({ ...prev, address: e.target.value }))
-              }
-              required
-            />
-
-            <input
-              className="input"
-              type="number"
-              step="any"
-              placeholder="Latitude"
-              value={locationForm.latitude}
-              onChange={(e) =>
-                setLocationForm((prev) => ({ ...prev, latitude: e.target.value }))
-              }
-              required
-            />
-
-            <input
-              className="input"
-              type="number"
-              step="any"
-              placeholder="Longitude"
-              value={locationForm.longitude}
-              onChange={(e) =>
-                setLocationForm((prev) => ({ ...prev, longitude: e.target.value }))
-              }
-              required
-            />
-
-            <input
-              className="input"
-              placeholder="Image URL (optional)"
-              value={locationForm.image_url}
-              onChange={(e) =>
-                setLocationForm((prev) => ({ ...prev, image_url: e.target.value }))
-              }
-            />
-
-            <input
-              className="input"
-              type="file"
-              accept=".png,.jpg,.jpeg,.pdf,.webp"
-              onChange={(e) => setLocationImage(e.target.files?.[0] || null)}
-            />
-
-            <div className="actions">
-              <button className="btn btn-primary" type="submit">
-                {locationForm.id ? 'Update Location' : 'Save Location'}
-              </button>
-              <button
-                className="btn btn-secondary"
-                type="button"
-                onClick={resetLocationForm}
-              >
-                Reset
-              </button>
-            </div>
+            <input className="input" placeholder="Name" value={locationForm.name} onChange={(e) => setLocationForm((p) => ({ ...p, name: e.target.value }))} required />
+            <input className="input" placeholder="Address" value={locationForm.address} onChange={(e) => setLocationForm((p) => ({ ...p, address: e.target.value }))} required />
+            <input className="input" type="number" step="any" placeholder="Latitude" value={locationForm.latitude} onChange={(e) => setLocationForm((p) => ({ ...p, latitude: e.target.value }))} required />
+            <input className="input" type="number" step="any" placeholder="Longitude" value={locationForm.longitude} onChange={(e) => setLocationForm((p) => ({ ...p, longitude: e.target.value }))} required />
+            <input className="input" placeholder="Image URL (optional)" value={locationForm.image_url} onChange={(e) => setLocationForm((p) => ({ ...p, image_url: e.target.value }))} />
+            <input className="input" type="file" accept=".png,.jpg,.jpeg,.pdf" onChange={(e) => setLocationImage(e.target.files?.[0] || null)} />
+            <button className="btn btn-primary" type="submit">Save Location</button>
           </form>
 
           <div className="stack mt-sm">
@@ -535,24 +209,16 @@ export default function AdminDashboard() {
                 <div>
                   <h3>{location.name}</h3>
                   <p>{location.address}</p>
-                  <p>
-                    Lat: {location.latitude}, Lng: {location.longitude}
-                  </p>
                 </div>
-
                 <div className="actions">
-                  <button
-                    className="btn btn-secondary"
-                    type="button"
-                    onClick={() => handleEditLocation(location)}
-                  >
-                    Edit
-                  </button>
-
+                  <button className="btn btn-secondary" type="button" onClick={() => setLocationForm(location)}>Edit</button>
                   <button
                     className="btn btn-danger"
                     type="button"
-                    onClick={() => handleDeleteLocation(location.id)}
+                    onClick={async () => {
+                      await deleteLocation(location.id);
+                      await loadData();
+                    }}
                   >
                     Delete
                   </button>
@@ -562,6 +228,26 @@ export default function AdminDashboard() {
           </div>
         </section>
       </div>
+
+      <section className="mt-md">
+        <h2>Recent Transactions</h2>
+        <div className="stack mt-sm">
+          {orders.slice(0, 10).map((order) => (
+            <article key={order.id} className="card row-between">
+              <div>
+                <h3>Order #{order.id.slice(0, 8)}</h3>
+                <p>User: {order.user_id}</p>
+                <p className="small">{new Date(order.created_at).toLocaleString()}</p>
+              </div>
+              <div>
+                <p><strong>Status:</strong> {order.status}</p>
+                <p><strong>Total:</strong> ₦{Number(order.total).toLocaleString()}</p>
+              </div>
+            </article>
+          ))}
+          {!orders.length && <p className="small">No transactions yet.</p>}
+        </div>
+      </section>
     </div>
   );
 }

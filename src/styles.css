@@ -245,6 +245,10 @@ p { color: var(--muted); }
   gap: 1rem;
 }
 
+.quick-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .form {
   display: grid;
   gap: 0.6rem;

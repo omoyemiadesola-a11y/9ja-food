@@ -4,6 +4,8 @@ A mobile-first, desktop-responsive restaurant web app with:
 - Supabase authentication (signup/login/session persistence)
 - user-specific cart checkout + order history
 - admin-only dashboard for food/location CRUD and image uploads
+- role-aware navigation (public, user, and admin navigation bars)
+- admin transaction insights (users count, orders count, recent transactions)
 - Google Maps locations visualization
 
 ## Admin Login
