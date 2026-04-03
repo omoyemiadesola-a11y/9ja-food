@@ -15,10 +15,7 @@ export default function HomePage() {
             <Link className="btn btn-secondary" to="/menu">View Menu</Link>
           </div>
         </div>
-        <img
-          src="public/9JAFoodJollofRice.png"
-          alt="Food hero"
-        />
+        <img src="/9JAFoodJollofRice.png" alt="Food hero" />
       </section>
 
       <section className="section">
