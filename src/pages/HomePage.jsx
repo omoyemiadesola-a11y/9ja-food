@@ -16,7 +16,7 @@ export default function HomePage() {
           </div>
         </div>
         <img
-          src="https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=1200&q=80"
+          src="public/9JAFoodJollofRice.png"
           alt="Food hero"
         />
       </section>
